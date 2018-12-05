@@ -1,0 +1,243 @@
+==============ReactJs Setup
+
+---------------URL()
+https://github.com/hamza-mirza/react-weather-app/tree/master/src
+https://www.valentinog.com/blog/react-webpack-babel/
+http://fakerestapi.azurewebsites.net/swagger/ui/index#/
+
+
+
+mkdir webpack-react-tutorial && cd webpack-react-tutorial
+
+mkdir -p src
+
+npm init -y
+
+npm i webpack --save-dev
+
+npm i webpack-cli --save-dev
+
+---added in package.json
+
+"scripts": {
+  "build": "webpack --mode production"
+}
+
+---Let’s pull in the dependencies with:
+npm i @babel/core babel-loader @babel/preset-env @babel/preset-react --save-dev
+
+---create file inside project with name ".babelrc"
+
+{
+  "presets": ["@babel/preset-env", "@babel/preset-react"]
+}
+
+---create file inside project with name "webpack.config.js"
+
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader"
+        }
+      }
+    ]
+  }
+};
+
+
+---Before touching any code let’s pull in React by running:
+npm i react react-dom --save-dev
+
+
+---Then create a minimal directory structure for organizing the components:
+mkdir -p src/js/components/{container,presentational}
+
+
+---Create the component into src/js/components/container/:
+
+touch src/js/components/container/FormContainer.js
+
+import React, { Component } from "react";
+import ReactDOM from "react-dom";
+class FormContainer extends Component {
+  constructor() {
+    super();
+    this.state = {
+      title: ""
+    };
+  }
+  render() {
+    return (
+      <form id="article-form">
+      </form>
+    );
+  }
+}
+export default FormContainer;
+
+---Create a new component inside src/js/components/presentational/:
+
+touch src/js/components/presentational/Input.js
+
+---Install the package by running:
+
+npm i prop-types --save-dev
+
+---Update src/js/components/presentational/Input.js
+
+import React from "react";
+import PropTypes from "prop-types";
+const Input = ({ label, text, type, id, value, handleChange }) => (
+  <div className="form-group">
+    <label htmlFor={label}>{text}</label>
+    <input
+      type={type}
+      className="form-control"
+      id={id}
+      value={value}
+      onChange={handleChange}
+      required
+    />
+  </div>
+);
+Input.propTypes = {
+  label: PropTypes.string.isRequired,
+  text: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  handleChange: PropTypes.func.isRequired
+};
+export default Input;
+
+
+---Update src/js/components/container/FormContainer.js
+
+import React, { Component } from "react";
+import ReactDOM from "react-dom";
+import Input from "../presentational/Input";
+class FormContainer extends Component {
+  constructor() {
+    super();
+    this.state = {
+      seo_title: ""
+    };
+    this.handleChange = this.handleChange.bind(this);
+  }
+  handleChange(event) {
+    this.setState({ [event.target.id]: event.target.value });
+  }
+  render() {
+    const { seo_title } = this.state;
+    return (
+      <form id="article-form">
+        <Input
+          text="SEO title"
+          label="seo_title"
+          type="text"
+          id="seo_title"
+          value={seo_title}
+          handleChange={this.handleChange}
+        />
+      </form>
+    );
+  }
+}
+export default FormContainer;
+
+---Create ./src/index.jsand place an import directive into it for requiring the container component:
+
+import FormContainer from "./js/components/container/FormContainer";
+
+---With this in place we’re ready to create our bundle by running:
+npm run build
+
+---The bundle will be placed into
+./dist/main.js
+
+---Add the dependencies with:
+npm i html-webpack-plugin html-loader --save-dev
+
+---Then update the webpack configuration:(webpack.config.js)
+
+
+const HtmlWebPackPlugin = require("html-webpack-plugin");
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader"
+        }
+      },
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: "html-loader"
+          }
+        ]
+      }
+    ]
+  },
+  plugins: [
+    new HtmlWebPackPlugin({
+      template: "./src/index.html",
+      filename: "./index.html"
+    })
+  ]
+};
+
+---Next up reate an HTML file into create ./src/index.html(feel free to use whichever CSS library you like):
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" >
+    <title>How to set up React, Webpack, and Babel</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-4 offset-md-1">
+                <p>Create a new article</p>
+                <div id="create-article-form">
+                    <!-- form -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+---Open up ./src/js/components/container/FormContainer.jsand add the following at the bottom of the file:
+
+const wrapper = document.getElementById("create-article-form");
+wrapper ? ReactDOM.render(<FormContainer />, wrapper) : false;
+
+---Now run the build again with:
+npm run build
+
+---Open up ./dist/index.htmlin your browser: you should see the React form.
+
+---To set up webpack dev server install the package with:
+npm i webpack-dev-server --save-dev
+
+---Open up package.json to add the start script:
+
+"scripts": {
+  "start": "webpack-dev-server --open --mode development",
+  "build": "webpack"
+}
+
+
+---@babel/plugin-proposal-class-properties
+
+npm install --save-dev @babel/plugin-proposal-class-properties
